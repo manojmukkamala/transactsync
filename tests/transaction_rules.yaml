@@ -1,0 +1,9 @@
+credit_cards:
+  account1:
+    from_address:
+      - sender@example.com
+    subject:
+      - Test Subject
+    account_numbers:
+      - "123456789"
+    financial_institution: Bank A
