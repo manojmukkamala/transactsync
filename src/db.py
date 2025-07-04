@@ -1,6 +1,7 @@
 import duckdb
 
 class DB:
+
     def __init__(self, db_name):
         self.db_name = db_name
         self.con = duckdb.connect(self.db_name)
@@ -14,6 +15,7 @@ class DB:
         - `seq_transaction_id` for unique transaction IDs.
         - `dim_accounts` table to store account details.
         - `fact_transactions` table to store transaction details.
+        - `checkpoints` table to store the last seen email UID for checkpointing (replaces external file).
         """
         
         self.con.execute("CREATE SEQUENCE IF NOT EXISTS seq_account_id START WITH 1 INCREMENT BY 1;")
@@ -51,6 +53,39 @@ class DB:
                 llm_reasoning STRING
             );
         """)
+
+        self.con.execute("CREATE SEQUENCE IF NOT EXISTS seq_email_checkpoint_id START WITH 1 INCREMENT BY 1;")
+        self.con.execute("""
+            CREATE TABLE IF NOT EXISTS email_checkpoints (
+                id BIGINT PRIMARY KEY DEFAULT nextval('seq_email_checkpoint_id'),
+                folder VARCHAR NOT NULL,
+                last_seen_uid INTEGER,
+                UNIQUE(folder)
+            );
+        """)
+
+    def get_last_seen_uid(self, folder):
+        """
+        Retrieve the last seen email UID for a specific folder from the email_checkpoints table.
+        Args:
+            folder (str): The email folder name.
+        Returns:
+            int or None: The last seen UID, or None if not set.
+        """
+        row = self.con.execute("SELECT last_seen_uid FROM email_checkpoints WHERE folder=?", (folder,)).fetchone()
+        return row[0] if row else None
+
+    def set_last_seen_uid(self, folder, uid):
+        """
+        Update or insert the last seen email UID for a specific folder in the email_checkpoints table.
+        Args:
+            folder (str): The email folder name.
+            uid (int): The UID to store as the checkpoint.
+        """
+        if self.con.execute("SELECT 1 FROM email_checkpoints WHERE folder=?", (folder,)).fetchone():
+            self.con.execute("UPDATE email_checkpoints SET last_seen_uid=? WHERE folder=?", (uid, folder))
+        else:
+            self.con.execute("INSERT INTO email_checkpoints (folder, last_seen_uid) VALUES (?, ?)", (folder, uid))
 
     def get_account_ids_dict(self) -> dict:
         """
