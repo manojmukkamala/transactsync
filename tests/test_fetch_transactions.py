@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 import json
-
+import logging
 
 from unittest.mock import patch, MagicMock
 from fetch_transactions import TransactionHandler
@@ -29,7 +29,8 @@ def test_get_transaction():
         mock_llm_bridge.list.return_value.models = [MagicMock(model="qwen3:8b")]
         mock_client.return_value = mock_llm_bridge
 
-        transaction_handler = TransactionHandler(model_host="http://localhost:11434", model="qwen3:8b")
+        dummy_logger = logging.getLogger("dummy")
+        transaction_handler = TransactionHandler(dummy_logger, model_host="http://localhost:11434", model="qwen3:8b")
 
         e_mail = {
             "from_address": "sender@example.com",
@@ -68,7 +69,8 @@ def test_parse_model_output():
         mock_llm_bridge.list.return_value.models = [MagicMock(model="qwen3:8b")]
         mock_client.return_value = mock_llm_bridge
 
-        transaction_handler = TransactionHandler(model_host="http://localhost:11434", model="qwen3:8b")
+        dummy_logger = logging.getLogger("dummy")
+        transaction_handler = TransactionHandler(dummy_logger, model_host="http://localhost:11434", model="qwen3:8b")
         llm_reasoning, llm_prediction = transaction_handler.parse_model_output(raw_output)
 
         assert llm_reasoning == "Some reasoning text.", "Expected reasoning text to match"
