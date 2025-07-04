@@ -2,19 +2,18 @@ import re
 import json
 from ollama import Client
 from typing import Optional, Tuple
-import logging
-logger = logging.getLogger(__name__)
 
 class TransactionHandler:
 
-    def __init__(self, model="qwen3:8b", model_host="http://localhost:11434"):
+    def __init__(self, logger, model="qwen3:8b", model_host="http://localhost:11434"):
         self.model = model
         self.model_host = model_host
         self.llm_bridge = Client(host=self.model_host)
         if "qwen3:8b" not in [m.model for m in self.llm_bridge.list().models]:
             logger.info(f"Model not found in available models. Pulling model: {model}")
             self.llm_bridge.pull(model)
-        logger.info(f"Using model: {model}")
+        self.logger = logger
+        self.logger.info(f"Using model: {model}")
     
     def get_transaction(self, e_mail: dict, llm_prompt: Optional[str] = None) -> Tuple[str, dict]:
         """
@@ -32,6 +31,7 @@ class TransactionHandler:
         """
 
         if llm_prompt is None:
+            self.logger.info(f"Using default prompt")
             llm_prompt = f"""
             extract the following fields from this email:
             ```
