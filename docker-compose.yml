@@ -1,0 +1,27 @@
+services:
+  ollama:
+    container_name: ollama
+    image: ollama/ollama:0.9.5
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+  transactsync:
+    container_name: transactsync
+    image: transactsync
+    environment:
+      - EMAIL_HOST=imap.email.com
+      - EMAIL_PORT=143
+      - EMAIL_USERNAME=user@email.com
+      - EMAIL_PASSWORD=pass1234
+      - FOLDER=INBOX     
+      - MODEL_HOST=http://ollama:11434
+      - MODEL_NAME=qwen3:8b
+    volumes:
+      - finances-db:/workspace/db/
+      - ./templates/transaction_rules.yaml:/workspace/transaction_rules.yaml
+      - ./templates/prompt.txt:/workspace/prompt.txt
+
+volumes:
+  ollama-models:
+  finances-db:
