@@ -1,16 +1,19 @@
 import re
 import json
-from llama_index.llms.ollama import Ollama
+from ollama import Client
 from typing import Optional, Tuple
 
 class TransactionHandler:
 
-    def __init__(self, model="qwen3:8b", request_timeout=300.0, json_mode=False, model_host="http://localhost:11434"):
+    def __init__(self, logger, model="qwen3:8b", model_host="http://localhost:11434"):
+        self.logger = logger
         self.model = model
-        self.request_timeout = request_timeout
-        self.json_mode = json_mode
-        self.model_host = model_host  # Corrected variable name from madel_host to model_host
-        self.llm_bridge = Ollama(base_url=self.model_host, model=self.model, request_timeout=self.request_timeout, json_mode=self.json_mode)
+        self.model_host = model_host
+        self.llm_bridge = Client(host=self.model_host)
+        if self.model not in [m.model for m in self.llm_bridge.list().models]:
+            self.logger.info(f"Model not found in available models. Pulling model: {self.model}")
+            self.llm_bridge.pull(self.model)
+        self.logger.info(f"Using model: {self.model}")
     
     def get_transaction(self, e_mail: dict, llm_prompt: Optional[str] = None) -> Tuple[str, dict]:
         """
@@ -28,6 +31,7 @@ class TransactionHandler:
         """
 
         if llm_prompt is None:
+            self.logger.info(f"Using default prompt")
             llm_prompt = f"""
             extract the following fields from this email:
             ```
@@ -53,7 +57,7 @@ class TransactionHandler:
             \n body: \n{e_mail["body"].strip()}
             """.strip() 
 
-        llm_response = self.llm_bridge.complete(llm_prompt).text.strip()
+        llm_response = self.llm_bridge.generate(model=self.model, prompt=llm_prompt).response
 
         llm_reasoning, llm_prediction = self.parse_model_output(llm_response)
 

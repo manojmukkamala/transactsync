@@ -59,15 +59,16 @@ class TestMain(unittest.TestCase):
         db_mock = MockDB.return_value
         db_mock.get_account_ids_dict.return_value = {('Bank A', '123456789'): 1}
         db_mock.save_transaction = MagicMock()
+        db_mock.get_last_seen_uid.return_value = None
+        db_mock.set_last_seen_uid = MagicMock()
 
-        # Call the main function with last_seen_uid set to None by setting ckpt_file to None
+        # Call the main function (no ckpt_file argument needed)
         transactsync(
             email_host="imap.example.com",
             email_port=143,
             username="user",
             password="pass",
             folder="INBOX",
-            ckpt_file="tests/last_uid.txt",
             transaction_rules="tests/transaction_rules.yaml",
             db_file="test_db.duckdb",
             prompt_file="prompt.txt"
@@ -79,11 +80,7 @@ class TestMain(unittest.TestCase):
 
         # Assertions
         assert 'last_seen_uid' in email_handler_mock.get_emails.call_args.kwargs, "last_seen_uid not found in call arguments"
-        # assert email_handler_mock.get_emails.call_args.kwargs['last_seen_uid'] is None, f"Expected last_seen_uid to be None but got {email_handler_mock.get_emails.call_args.kwargs['last_seen_uid']}"
-
-        # Assertions
         args, kwargs = email_handler_mock.get_emails.call_args
-        # assert kwargs['last_seen_uid'] is None, f"Expected last_seen_uid to be None but got {kwargs['last_seen_uid']}"
         transaction_handler_mock.get_transaction.assert_called_once_with(
             {
                 "uid": "1",
@@ -115,3 +112,4 @@ class TestMain(unittest.TestCase):
             },
             account_id = 1
         )
+        db_mock.set_last_seen_uid.assert_called_with("INBOX", 1)

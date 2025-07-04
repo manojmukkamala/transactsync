@@ -1,0 +1,29 @@
+You are given an email and you have to perform a series of checks and extract the requested information.
+
+check 1: Make sure the email is coming only from one of the financial institutions in the United States. You can confirm this by looking at the `from_address` which may likely look like: {from_address_filter}.
+
+check 2: If yes, you have to determine if the email is only about a credit card purchase. You can confirm this by looking at the email subject which may likely look like: {subject_filter}.
+
+check 3: If yes, you have to check the email body to verify if the email is only about a credit card purchase and not about payment and not about statement and not about transfer and not about deposit and not about withdrawal. 
+
+If passed, then extract the following fields from this email:
+```
+- last 4 digits of account number or card number which is usually one of [{account_number_filter}]
+- transaction date
+- transaction amount
+- merchant (if available)
+```
+
+and return JSON with the following keys and data types: 
+```
+- account_number string
+- transaction_amount float
+- transaction_date timestamp
+- merchant string
+- transaction_flag = true
+```
+
+check 4: If none of the above conditions satisfy, just return the following:
+```
+transaction_flag = false
+```

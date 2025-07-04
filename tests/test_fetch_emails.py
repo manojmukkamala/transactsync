@@ -6,11 +6,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 import imaplib
 from unittest.mock import patch, MagicMock, call
 from fetch_emails import EmailHandler
+import logging
 
 def test_imap_bridge():
     # Mock imaplib.IMAP4 to avoid actual network calls
     with patch('imaplib.IMAP4', return_value=MagicMock()) as mock_imap:
-        email_handler = EmailHandler(host='imap.example.com', port=143, username='user', password='pass', folder='INBOX')
+        dummy_logger = logging.getLogger("dummy")
+        email_handler = EmailHandler(dummy_logger, host='imap.example.com', port=143, username='user', password='pass', folder='INBOX')
         connection = email_handler.imap_bridge()
         
         assert isinstance(connection, MagicMock), "Connection should be an instance of MagicMock"
@@ -24,7 +26,8 @@ def test_get_email_uids():
     mock_connection.uid.return_value = ('OK', [b'1 2 3'])
     
     with patch('imaplib.IMAP4', return_value=mock_connection):
-        email_handler = EmailHandler(host='imap.example.com', port=143, username='user', password='pass', folder='INBOX')
+        dummy_logger = logging.getLogger("dummy")
+        email_handler = EmailHandler(dummy_logger, host='imap.example.com', port=143, username='user', password='pass', folder='INBOX')
         email_handler.imap_bridge()  # Ensure the connection is established
         uids = email_handler.get_email_uids(last_seen_uid=None)
         
@@ -74,7 +77,8 @@ def test_get_emails():
     ]
     
     with patch('imaplib.IMAP4', return_value=mock_connection):
-        email_handler = EmailHandler(host='imap.example.com', port=143, username='user', password='pass', folder='INBOX')
+        dummy_logger = logging.getLogger("dummy")
+        email_handler = EmailHandler(dummy_logger, host='imap.example.com', port=143, username='user', password='pass', folder='INBOX')
         email_handler.imap_bridge()  # Ensure the connection is established
         emails = email_handler.get_emails(last_seen_uid=None)
         
