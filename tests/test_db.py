@@ -92,3 +92,61 @@ def test_save_transaction():
     # Check if the transaction is saved
     result = db.con.execute("SELECT COUNT(*) FROM fact_transactions").fetchone()
     assert result[0] == 1, "Transaction should be inserted into fact_transactions"
+
+def test_bootstrap_with_accounts_inserts_accounts():
+    db = DB(':memory:')
+    accounts = [
+        {
+            'account_number': '111',
+            'financial_institution': 'Bank X',
+            'account_name': 'Test Account X',
+            'account_owner': 'Owner X',
+            'comments': 'First insert'
+        },
+        {
+            'account_number': '222',
+            'financial_institution': 'Bank Y',
+            'account_name': 'Test Account Y',
+            'account_owner': 'Owner Y',
+            'comments': 'Second insert'
+        }
+    ]
+    db.bootstrap(accounts=accounts)
+    rows = db.con.execute("SELECT account_number, financial_institution, account_name, account_owner, comments FROM dim_accounts").fetchall()
+    assert len(rows) == 2
+    assert ('111', 'Bank X', 'Test Account X', 'Owner X', 'First insert') in rows
+    assert ('222', 'Bank Y', 'Test Account Y', 'Owner Y', 'Second insert') in rows
+
+def test_bootstrap_with_accounts_deduplicates_on_rerun():
+    db = DB(':memory:')
+    accounts1 = [
+        {
+            'account_number': '111',
+            'financial_institution': 'Bank X',
+            'account_name': 'Test Account X',
+            'account_owner': 'Owner X',
+            'comments': 'First insert'
+        }
+    ]
+    accounts2 = [
+        {
+            'account_number': '111',
+            'financial_institution': 'Bank X',
+            'account_name': 'Test Account X',
+            'account_owner': 'Owner X',
+            'comments': 'First insert'
+        },
+        {
+            'account_number': '333',
+            'financial_institution': 'Bank Z',
+            'account_name': 'Test Account Z',
+            'account_owner': 'Owner Z',
+            'comments': 'Third insert'
+        }
+    ]
+    db.bootstrap(accounts=accounts1)
+    db.bootstrap(accounts=accounts2)
+    rows = db.con.execute("SELECT account_number, financial_institution FROM dim_accounts").fetchall()
+    assert ('111', 'Bank X') in rows
+    assert ('333', 'Bank Z') in rows
+    assert len(rows) == 2
