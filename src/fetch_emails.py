@@ -6,7 +6,8 @@ from email.utils import parsedate_to_datetime
 
 class EmailHandler:
 
-    def __init__(self, host, port, username, password, folder):
+    def __init__(self, logger, host, port, username, password, folder):
+        self.logger = logger
         self.host = host
         self.port = port
         self.username = username
@@ -22,6 +23,7 @@ class EmailHandler:
         """
         try:
             # Connect to the IMAP server
+            self.logger.info(f"Connecting to email host: {self.host}:{self.port}")
             self.imapb = imaplib.IMAP4(self.host, self.port)
             # Login to the account
             self.imapb.login(self.username, self.password)
@@ -79,7 +81,7 @@ class EmailHandler:
             for uid in uids:
                 status, msg_data = self.imapb.uid("fetch", uid, "(RFC822)")
                 if status != "OK":
-                    print(f"Failed to fetch email UID {uid}")
+                    self.logger.error(f"Failed to fetch email UID {uid}")
                     continue
 
                 raw_email = msg_data[0][1]

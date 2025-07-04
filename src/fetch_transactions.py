@@ -6,14 +6,14 @@ from typing import Optional, Tuple
 class TransactionHandler:
 
     def __init__(self, logger, model="qwen3:8b", model_host="http://localhost:11434"):
+        self.logger = logger
         self.model = model
         self.model_host = model_host
         self.llm_bridge = Client(host=self.model_host)
-        if "qwen3:8b" not in [m.model for m in self.llm_bridge.list().models]:
-            logger.info(f"Model not found in available models. Pulling model: {model}")
-            self.llm_bridge.pull(model)
-        self.logger = logger
-        self.logger.info(f"Using model: {model}")
+        if self.model not in [m.model for m in self.llm_bridge.list().models]:
+            self.logger.info(f"Model not found in available models. Pulling model: {self.model}")
+            self.llm_bridge.pull(self.model)
+        self.logger.info(f"Using model: {self.model}")
     
     def get_transaction(self, e_mail: dict, llm_prompt: Optional[str] = None) -> Tuple[str, dict]:
         """
