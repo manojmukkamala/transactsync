@@ -98,7 +98,7 @@ def transactsync(email_host, email_port, username, password, folder, db_file, tr
     logger.info(f"last_seen_uid: {last_seen_uid}")
     max_uid = -1 if last_seen_uid is None else last_seen_uid
 
-    email_handler = EmailHandler(email_host, email_port, username, password, folder, logger)
+    email_handler = EmailHandler(logger, email_host, email_port, username, password, folder)
     e_mails = email_handler.get_emails(last_seen_uid=last_seen_uid)
 
     logger.info(f"Found {len(e_mails)} new emails")
@@ -109,7 +109,7 @@ def transactsync(email_host, email_port, username, password, folder, db_file, tr
             account_name_map[from_address] = transaction_filters["credit_cards"][account]["financial_institution"]
 
     acct_ids_dict = db_obj.get_account_ids_dict()
-    transaction_handler = TransactionHandler(model_host=model_host, model=model)
+    transaction_handler = TransactionHandler(logger=logger, model_host=model_host, model=model)
 
     for e_mail in e_mails:
         llm_reasoning, llm_prediction = transaction_handler.get_transaction(e_mail, llm_prompt)
