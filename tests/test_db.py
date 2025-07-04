@@ -1,3 +1,30 @@
+def test_set_and_get_last_seen_uid_for_multiple_folders():
+    db = DB(':memory:')
+    db.bootstrap()
+    # Initially, no checkpoint for either folder
+    assert db.get_last_seen_uid('INBOX') is None
+    assert db.get_last_seen_uid('Archive') is None
+    # Set for INBOX
+    db.set_last_seen_uid('INBOX', 42)
+    assert db.get_last_seen_uid('INBOX') == 42
+    assert db.get_last_seen_uid('Archive') is None
+    # Set for Archive
+    db.set_last_seen_uid('Archive', 99)
+    assert db.get_last_seen_uid('INBOX') == 42
+    assert db.get_last_seen_uid('Archive') == 99
+
+def test_update_last_seen_uid_for_folder():
+    db = DB(':memory:')
+    db.bootstrap()
+    db.set_last_seen_uid('INBOX', 10)
+    assert db.get_last_seen_uid('INBOX') == 10
+    db.set_last_seen_uid('INBOX', 55)
+    assert db.get_last_seen_uid('INBOX') == 55
+
+def test_get_last_seen_uid_returns_none_for_unknown_folder():
+    db = DB(':memory:')
+    db.bootstrap()
+    assert db.get_last_seen_uid('NonExistentFolder') is None
 import sys
 from pathlib import Path
 
