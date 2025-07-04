@@ -1,0 +1,103 @@
+# this file is designed to support multiple credit cards (account numbers as a list) from a single financial institution.
+# if the subject line of email alert is changed by the bank or if a bank uses different subject lines for different credit cards, multiple subject lines can be added.
+# multiple from addresses from a single bank is supported too.
+
+credit_cards:
+  wells_fargo:
+    financial_institution: wells fargo
+    from_address: 
+      - alerts@notify.wellsfargo.com
+    subject: 
+      - You made a credit card purchase of $
+    attributes:
+      - credit card
+      - amount
+      - merchant detail
+    account_numbers:
+      - '1111'
+
+  discover:
+    financial_institution: discover  
+    from_address: 
+      - discover@services.discover.com
+    subject: 
+      - Transaction Alert
+    attributes:
+      - last 4 # (available at top right)
+      - transaction date
+      - merchant
+      - amount
+    account_numbers:
+      - '1111'      
+
+  chase:
+    financial_institution: chase  
+    from_address: 
+      - no.reply.alerts@chase.com
+    subject: 
+      - You made a $XX.XX transaction with X
+    attributes:  
+      - account
+      - date
+      - merchant
+      - amount
+    account_numbers:
+      - '1111'
+      - '2222'
+
+  capital_one:
+    financial_institution: capital one  
+    from_address: 
+      - capitalone@notification.capitalone.com
+    subject: 
+      - A new transaction was charged to your account
+    attributes:  
+      - account
+      - date
+      - merchant
+      - amount  
+    account_numbers:
+      - '2222'   
+
+  american_express:
+    financial_institution: amex
+    from_address:
+      - AmericanExpress@welcome.americanexpress.com
+    subject:
+      - Large Purchase Approved
+    attributes:  
+      - account
+      - date
+      - merchant
+      - amount       
+    account_numbers:
+      - '0123'
+
+  citi:
+    financial_institution: citi
+    from_address:
+      - alerts@info6.citi.com
+    subject:
+      - A $X transaction was made on your Costco Anywhere account
+    attributes:  
+      - account
+      - date
+      - merchant
+      - amount       
+    account_numbers:
+      - '1111'      
+
+checking_accounts:
+  discover_checking:
+    financial_institution:
+      - discover  
+    from_address: 
+      - discover@services.discover.com
+    subject: 
+      - 'Alert: A recent credit to your account'
+    attributes:
+      custom:
+        - bank acct ending in 4 # (available at top right)
+        - amount
+        - account name
+        - date
